@@ -1,0 +1,8 @@
+groq
+pymongo
+python-dotenv
+dnspython
+fastapi
+uvicorn
+jinja2
+python-multipart

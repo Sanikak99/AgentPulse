@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AgentPulse — Hospital Asset Management</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --teal-50:  #E1F5EE;
+      --teal-200: #5DCAA5;
+      --teal-400: #1D9E75;
+      --teal-700: #085041;
+      --coral-50: #FAECE7;
+      --coral-400:#D85A30;
+      --coral-700:#712B13;
+      --amber-50: #FAEEDA;
+      --amber-400:#BA7517;
+      --gray-50:  #F1EFE8;
+      --gray-200: #B4B2A9;
+      --gray-400: #888780;
+      --white:    #ffffff;
+      --border:   rgba(0,0,0,0.1);
+      --text:     #1a1a1a;
+      --text-muted: #666;
+      --bg-page:  #F7F8FA;
+      --sidebar-w:230px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-page);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      height: 56px;
+      background: var(--white);
+      border-bottom: 0.5px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .logo {
+      width: 32px; height: 32px;
+      background: var(--teal-50);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo svg { width: 18px; height: 18px; }
+    .brand-name  { font-size: 15px; font-weight: 600; letter-spacing: -0.3px; }
+    .brand-sub   { font-size: 11px; color: var(--text-muted); }
+    .topbar-right { display: flex; align-items: center; gap: 8px; }
+    .pill {
+      font-size: 11px; padding: 4px 10px;
+      border-radius: 20px; border: 0.5px solid;
+    }
+    .pill-green { background: var(--teal-50);  color: var(--teal-700);  border-color: var(--teal-200); }
+    .pill-red   { background: var(--coral-50); color: var(--coral-700); border-color: var(--coral-400); }
+    .pill-amber { background: var(--amber-50); color: var(--amber-400); border-color: var(--amber-400); }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--teal-400); display: inline-block; margin-right: 4px; animation: blink 2s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* ── SHELL ── */
+    .shell {
+      display: grid;
+      grid-template-columns: var(--sidebar-w) 1fr;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      background: var(--white);
+      border-right: 0.5px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 20px 0;
+      overflow-y: auto;
+    }
+    .nav-section-label {
+      font-size: 10px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      color: var(--gray-400);
+      padding: 0 18px; margin-bottom: 4px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 18px;
+      font-size: 13px; color: var(--text-muted);
+      cursor: pointer;
+      border-left: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .nav-item:hover { background: var(--gray-50); color: var(--text); }
+    .nav-item.active {
+      background: var(--teal-50);
+      color: var(--teal-700);
+      border-left-color: var(--teal-400);
+      font-weight: 500;
+    }
+    .nav-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+    .nav-sep { height: 0.5px; background: var(--border); margin: 12px 18px; }
+    .nav-badge {
+      margin-left: auto; font-size: 10px;
+      background: var(--coral-50); color: var(--coral-700);
+      padding: 2px 6px; border-radius: 10px;
+    }
+
+    /* ── MAIN ── */
+    .main {
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .main-header {
+      padding: 20px 24px 0;
+      flex-shrink: 0;
+    }
+    .page-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+
+    /* Stats */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
+      background: var(--white);
+      border: 0.5px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+    }
+    .stat-label { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; }
+    .stat-value { font-size: 26px; font-weight: 600; line-height: 1; }
+    .stat-value.green  { color: var(--teal-400); }
+    .stat-value.red    { color: var(--coral-400); }
+    .stat-value.amber  { color: var(--amber-400); }
+    .stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+    /* Content grid */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 0;
+      flex: 1;
+      overflow: hidden;
+      border-top: 0.5px solid var(--border);
+      margin-top: 4px;
+    }
+
+    /* Asset table */
+    .asset-panel {
+      padding: 16px 24px;
+      overflow-y: auto;
+      border-right: 0.5px solid var(--border);
+    }
+    .panel-header {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .panel-title {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+    .refresh-btn {
+      font-size: 11px; padding: 3px 8px;
+      border-radius: 6px;
+      border: 0.5px solid var(--border);
+      background: transparent; cursor: pointer;
+      color: var(--text-muted);
+    }
+    .refresh-btn:hover { background: var(--gray-50); }
+
+    .asset-table { width: 100%; border-collapse: collapse; }
+    .asset-table th {
+      font-size: 11px; font-weight: 500;
+      color: var(--text-muted);
+      text-align: left; padding: 6px 8px;
+      border-bottom: 0.5px solid var(--border);
+    }
+    .asset-table td {
+      padding: 8px 8px;
+      font-size: 13px;
+      border-bottom: 0.5px solid rgba(0,0,0,0.04);
+      vertical-align: middle;
+    }
+    .asset-table tr:last-child td { border-bottom: none; }
+    .asset-table tr:hover td { background: var(--gray-50); }
+    .dept-tag {
+      font-size: 10px; padding: 2px 7px;
+      border-radius: 10px;
+      background: var(--teal-50); color: var(--teal-700);
+      display: inline-block;
+    }
+    .bar-cell { width: 80px; }
+    .bar-bg {
+      height: 6px; background: var(--gray-50);
+      border-radius: 3px; overflow: hidden;
+      border: 0.5px solid var(--border);
+    }
+    .bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
+    .bar-ok   { background: var(--teal-400); }
+    .bar-low  { background: var(--amber-400); }
+    .bar-crit { background: var(--coral-400); }
+    .stock-num { font-size: 12px; font-weight: 500; text-align: right; }
+    .stock-crit { color: var(--coral-400); }
+    .stock-low  { color: var(--amber-400); }
+    .status-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      display: inline-block; margin-right: 6px;
+    }
+
+    /* ── CHAT PANEL ── */
+    .chat-panel {
+      display: flex; flex-direction: column;
+      background: var(--white);
+      overflow: hidden;
+    }
+    .chat-header {
+      padding: 12px 16px;
+      border-bottom: 0.5px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
+      flex-shrink: 0;
+    }
+    .chat-header-icon {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--teal-50);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .chat-header-icon svg { width: 14px; height: 14px; }
+    .chat-header-title { font-size: 13px; font-weight: 500; }
+    .chat-header-sub   { font-size: 11px; color: var(--text-muted); }
+
+    .chat-msgs {
+      flex: 1; overflow-y: auto;
+      padding: 14px 16px;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .msg { display: flex; gap: 8px; align-items: flex-start; }
+    .msg.user { flex-direction: row-reverse; }
+    .av {
+      width: 26px; height: 26px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 600; flex-shrink: 0;
+    }
+    .av-ai   { background: var(--teal-50);  color: var(--teal-700); }
+    .av-user { background: var(--gray-50);  color: var(--gray-400); }
+    .msg-body { max-width: 260px; }
+    .msg-tag  { font-size: 10px; color: var(--text-muted); margin-bottom: 3px; }
+    .msg.user .msg-tag { text-align: right; }
+    .bubble {
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 12px; line-height: 1.55;
+      border: 0.5px solid var(--border);
+    }
+    .bubble-ai   { background: var(--white); }
+    .bubble-user { background: var(--teal-50); color: var(--teal-700); }
+    .typing {
+      display: flex; gap: 4px;
+      padding: 10px 14px;
+      background: var(--white);
+      border: 0.5px solid var(--border);
+      border-radius: 10px;
+      width: fit-content;
+    }
+    .typing-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--gray-200);
+      animation: bounce 1.2s infinite;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce { 0%,100%{transform:translateY(0);opacity:0.4} 50%{transform:translateY(-4px);opacity:1} }
+
+    .quick-chips {
+      padding: 0 16px 10px;
+      display: flex; flex-wrap: wrap; gap: 5px;
+      flex-shrink: 0;
+    }
+    .chip {
+      font-size: 11px; padding: 4px 10px;
+      border-radius: 14px;
+      border: 0.5px solid var(--border);
+      background: var(--white);
+      cursor: pointer; color: var(--text-muted);
+      transition: all 0.15s;
+    }
+    .chip:hover { background: var(--teal-50); color: var(--teal-700); border-color: var(--teal-200); }
+
+    .chat-input-row {
+      padding: 12px 16px;
+      border-top: 0.5px solid var(--border);
+      display: flex; gap: 8px;
+      flex-shrink: 0;
+    }
+    .chat-input {
+      flex: 1;
+      border: 0.5px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 13px;
+      outline: none;
+      font-family: inherit;
+      background: var(--bg-page);
+    }
+    .chat-input:focus { border-color: var(--teal-200); background: var(--white); }
+    .send-btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: none;
+      background: var(--teal-400);
+      color: var(--white);
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+    .send-btn:hover { background: var(--teal-700); }
+    .send-btn:disabled { background: var(--gray-200); cursor: not-allowed; }
+    .bubble-ai h1,.bubble-ai h2,.bubble-ai h3 {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 8px 0 4px;
+    }
+    .bubble-ai p {
+        margin: 0 0 6px;
+    }
+    .bubble-ai p:last-child {
+        margin-bottom: 0;
+    }
+    .bubble-ai ul,.bubble-ai ol {
+        padding-left: 16px;
+        margin: 4px 0;
+    }
+    .bubble-ai li {
+        font-size: 12px;
+        margin-bottom: 3px;
+        line-height: 1.5;
+    }
+    .bubble-ai strong {
+        font-weight: 600;
+        color: var(--text);
+    }
+    .bubble-ai hr {
+        border: none;
+        border-top: 0.5px solid var(--border);
+        margin: 8px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="logo">
+        <svg viewBox="0 0 18 18" fill="none">
+          <rect x="8" y="2" width="2" height="14" rx="1" fill="#1D9E75"/>
+          <rect x="2" y="8" width="14" height="2" rx="1" fill="#1D9E75"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">AgentPulse</div>
+        <div class="brand-sub">Hospital Asset Management System</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="pill pill-green"><span class="dot"></span>System online</span>
+      <span class="pill pill-red" id="alert-pill">— alerts</span>
+    </div>
+  </div>
+
+  <div class="shell">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="nav-section-label" style="margin-bottom:8px">Navigation</div>
+
+      <div class="nav-item active">
+        <svg viewBox="0 0 15 15" fill="none">
+          <rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor"/>
+          <rect x="9" y="1" width="5" height="6" rx="1.5" fill="currentColor"/>
+          <rect x="1" y="9" width="5" height="5" rx="1.5" fill="currentColor"/>
+          <rect x="8" y="9" width="6" height="5" rx="1.5" fill="currentColor"/>
+        </svg>
+        Dashboard
+      </div>
+      <div class="nav-item" onclick="filterAssets('all')">
+        <svg viewBox="0 0 15 15" fill="none">
+          <rect x="1" y="2" width="13" height="2" rx="1" fill="currentColor"/>
+          <rect x="1" y="6.5" width="9" height="2" rx="1" fill="currentColor"/>
+          <rect x="1" y="11" width="11" height="2" rx="1" fill="currentColor"/>
+        </svg>
+        All Inventory
+      </div>
+      <div class="nav-item" onclick="filterAssets('critical')">
+        <svg viewBox="0 0 15 15" fill="none">
+          <circle cx="7.5" cy="7.5" r="5.5" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="7" y="4" width="1" height="4.5" rx="0.5" fill="currentColor"/>
+          <circle cx="7.5" cy="10.5" r="0.8" fill="currentColor"/>
+        </svg>
+        Alerts
+        <span class="nav-badge" id="alert-count">—</span>
+      </div>
+
+      <div class="nav-sep"></div>
+      <div class="nav-section-label">Departments</div>
+      <div class="nav-item" onclick="filterByDept('ICU')">ICU</div>
+      <div class="nav-item" onclick="filterByDept('Emergency')">Emergency</div>
+      <div class="nav-item" onclick="filterByDept('OT')">OT</div>
+      <div class="nav-item" onclick="filterByDept('Ward A')">Ward A</div>
+      <div class="nav-item" onclick="filterByDept('Ward B')">Ward B</div>
+      <div class="nav-item" onclick="filterByDept('Blood Bank')">Blood Bank</div>
+
+      <div class="nav-sep"></div>
+      <div class="nav-section-label">Agents</div>
+      <div class="nav-item" onclick="sendChip('Generate today\'s full report')">
+        <svg viewBox="0 0 15 15" fill="none">
+          <rect x="2" y="1" width="11" height="13" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="4.5" y="4" width="6" height="1" rx="0.5" fill="currentColor"/>
+          <rect x="4.5" y="6.5" width="4" height="1" rx="0.5" fill="currentColor"/>
+          <rect x="4.5" y="9" width="5" height="1" rx="0.5" fill="currentColor"/>
+        </svg>
+        Run Report
+      </div>
+      <div class="nav-item" onclick="sendChip('Move assets to fix all shortages')">
+        <svg viewBox="0 0 15 15" fill="none">
+          <path d="M2 7.5h11M9 4l4 3.5L9 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Run Allocator
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+      <div class="main-header">
+        <div class="page-title">Dashboard</div>
+        <div class="stat-grid" id="stat-grid">
+          <div class="stat-card"><div class="stat-label">Total assets</div><div class="stat-value" id="s-total">—</div><div class="stat-sub">across all departments</div></div>
+          <div class="stat-card"><div class="stat-label">Open alerts</div><div class="stat-value red" id="s-alerts">—</div><div class="stat-sub">need attention</div></div>
+          <div class="stat-card"><div class="stat-label">Resolved today</div><div class="stat-value green" id="s-resolved">—</div><div class="stat-sub">alerts closed</div></div>
+          <div class="stat-card"><div class="stat-label">Events logged</div><div class="stat-value" id="s-events">—</div><div class="stat-sub">by all agents</div></div>
+        </div>
+      </div>
+
+      <div class="content-grid">
+        <!-- ASSET TABLE -->
+        <div class="asset-panel">
+          <div class="panel-header">
+            <div class="panel-title" id="table-title">Live Inventory</div>
+            <button class="refresh-btn" onclick="loadData()">Refresh</button>
+          </div>
+          <table class="asset-table">
+            <thead>
+              <tr>
+                <th>Asset</th>
+                <th>Department</th>
+                <th>Stock</th>
+                <th class="bar-cell">Level</th>
+                <th style="text-align:right">Count</th>
+              </tr>
+            </thead>
+            <tbody id="asset-tbody">
+              <tr><td colspan="5" style="text-align:center;color:#999;padding:24px">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- CHAT -->
+        <div class="chat-panel">
+          <div class="chat-header">
+            <div class="chat-header-icon">
+              <svg viewBox="0 0 14 14" fill="none">
+                <circle cx="7" cy="5" r="2.5" stroke="#1D9E75" stroke-width="1.5"/>
+                <path d="M2 13c0-2.2 2.2-4 5-4s5 1.8 5 4" stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div>
+              <div class="chat-header-title">Agent Assistant</div>
+              <div class="chat-header-sub">Orchestrator + 4 specialist agents</div>
+            </div>
+          </div>
+
+          <div class="chat-msgs" id="chat-msgs">
+            <div class="msg">
+              <div class="av av-ai">AI</div>
+              <div class="msg-body">
+                <div class="msg-tag">Orchestrator Agent</div>
+                <div class="bubble bubble-ai">System online. I coordinate Inventory, Alert, Allocator and Report agents. Ask me anything about hospital assets.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="quick-chips">
+            <div class="chip" onclick="sendChip('Which assets are critically low?')">Critical assets</div>
+            <div class="chip" onclick="sendChip('Show ICU inventory')">ICU stock</div>
+            <div class="chip" onclick="sendChip('Move assets to fix shortages')">Fix shortages</div>
+            <div class="chip" onclick="sendChip('Generate daily report')">Daily report</div>
+          </div>
+
+          <div class="chat-input-row">
+            <input class="chat-input" id="chat-input" placeholder="Ask the agent system..." />
+            <button class="send-btn" id="send-btn" onclick="sendMessage()">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  let allAssets = [];
+
+  async function loadData() {
+    try {
+      const [statsRes, assetsRes, alertsRes] = await Promise.all([
+        fetch('/api/stats'),
+        fetch('/api/assets'),
+        fetch('/api/alerts')
+      ]);
+      const stats  = await statsRes.json();
+      const assets = await assetsRes.json();
+      const alerts = await alertsRes.json();
+
+      allAssets = assets;
+
+      document.getElementById('s-total').textContent    = stats.total_assets    || 0;
+      document.getElementById('s-alerts').textContent   = stats.open_alerts     || 0;
+      document.getElementById('s-resolved').textContent = stats.resolved_alerts || 0;
+      document.getElementById('s-events').textContent   = stats.total_events    || 0;
+
+      const alertCount = stats.open_alerts || 0;
+      document.getElementById('alert-pill').textContent  = alertCount + ' alerts';
+      document.getElementById('alert-count').textContent = alertCount;
+
+      renderAssets(assets);
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  function getStatus(asset) {
+    if (asset.current_stock <= asset.min_threshold) return 'crit';
+    const pct = (asset.current_stock - asset.min_threshold) /
+                (asset.max_capacity  - asset.min_threshold);
+    return pct < 0.3 ? 'low' : 'ok';
+  }
+
+  function getBarPct(asset) {
+    const pct = Math.min(100, Math.round(
+      (asset.current_stock / asset.max_capacity) * 100
+    ));
+    return pct;
+  }
+
+  function renderAssets(assets) {
+    const tbody = document.getElementById('asset-tbody');
+    if (!assets.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#999;padding:24px">No assets found</td></tr>';
+      return;
+    }
+    tbody.innerHTML = assets.map(a => {
+      const s   = getStatus(a);
+      const pct = getBarPct(a);
+      const dotColor = s === 'crit' ? '#D85A30' : s === 'low' ? '#BA7517' : '#1D9E75';
+      const numClass = s === 'crit' ? 'stock-crit' : s === 'low' ? 'stock-low' : '';
+      return `<tr>
+        <td>
+          <span class="status-dot" style="background:${dotColor}"></span>
+          ${a.name}
+        </td>
+        <td><span class="dept-tag">${a.department}</span></td>
+        <td style="font-size:11px;color:#999">${a.unit}</td>
+        <td class="bar-cell">
+          <div class="bar-bg">
+            <div class="bar-fill bar-${s}" style="width:${pct}%"></div>
+          </div>
+        </td>
+        <td class="stock-num ${numClass}">${a.current_stock}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  function filterAssets(type) {
+    document.getElementById('table-title').textContent =
+      type === 'critical' ? 'Critical Assets' : 'Live Inventory';
+    const filtered = type === 'critical'
+      ? allAssets.filter(a => a.current_stock <= a.min_threshold)
+      : allAssets;
+    renderAssets(filtered);
+  }
+
+  function filterByDept(dept) {
+    document.getElementById('table-title').textContent = dept + ' — Inventory';
+    renderAssets(allAssets.filter(a => a.department === dept));
+  }
+
+  function addMessage(role, agentName, text) {
+    const msgs = document.getElementById('chat-msgs');
+    const div  = document.createElement('div');
+    div.className = 'msg' + (role === 'user' ? ' user' : '');
+
+    const cleanText = role === 'ai'
+        ? marked.parse(text)
+        : text;
+
+    div.innerHTML = role === 'user'
+        ? `<div class="av av-user">You</div>
+           <div class="msg-body">
+             <div class="msg-tag" style="text-align:right">Staff</div>
+             <div class="bubble bubble-user">${text}</div>
+           </div>`
+        : `<div class="av av-ai">AI</div>
+           <div class="msg-body">
+             <div class="msg-tag">${agentName}</div>
+             <div class="bubble bubble-ai">${cleanText}</div>
+           </div>`;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+    return div;
+}
+
+  function addTyping() {
+    const msgs = document.getElementById('chat-msgs');
+    const div  = document.createElement('div');
+    div.className = 'msg';
+    div.id = 'typing-indicator';
+    div.innerHTML = `<div class="av av-ai">AI</div>
+      <div class="msg-body">
+        <div class="msg-tag">Agent thinking...</div>
+        <div class="typing">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>
+      </div>`;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function removeTyping() {
+    const t = document.getElementById('typing-indicator');
+    if (t) t.remove();
+  }
+
+  async function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const btn   = document.getElementById('send-btn');
+    const query = input.value.trim();
+    if (!query) return;
+
+    input.value = '';
+    btn.disabled = true;
+    addMessage('user', 'Staff', query);
+    addTyping();
+
+    try {
+      const res  = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query })
+      });
+      const data = await res.json();
+      removeTyping();
+
+      const text      = data.response || data.error || 'No response';
+      const agentLine = text.startsWith('[') ? text.split('\n')[0] : 'Agent Response';
+      const agentName = agentLine.replace('[','').replace(']','').trim();
+      const body      = text.includes('\n') ? text.split('\n').slice(1).join('\n').trim() : text;
+
+      addMessage('ai', agentName, body);
+      loadData();
+    } catch(e) {
+      removeTyping();
+      addMessage('ai', 'System', 'Connection error. Is the Flask server running?');
+    }
+    btn.disabled = false;
+    input.focus();
+  }
+
+  function sendChip(text) {
+    document.getElementById('chat-input').value = text;
+    sendMessage();
+  }
+
+  document.getElementById('chat-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') sendMessage();
+  });
+
+  loadData();
+  setInterval(loadData, 30000);
+</script>
+</body>
+</html>

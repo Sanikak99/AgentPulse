@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AgentPulse — Hospital Asset Management</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --teal-50:  #E1F5EE; --teal-200: #5DCAA5;
+      --teal-400: #1D9E75; --teal-700: #085041;
+      --coral-50: #FAECE7; --coral-400: #D85A30; --coral-700: #712B13;
+      --amber-50: #FAEEDA; --amber-400: #BA7517;
+      --purple-50:#EEEDFE; --purple-700:#3C3489;
+      --blue-50:  #E6F1FB; --blue-700:  #0C447C;
+      --gray-50:  #F1EFE8; --gray-100: #D3D1C7;
+      --white: #ffffff; --border: rgba(0,0,0,0.08);
+      --text: #0a0a0a; --text-muted: #666;
+      --bg: #F7F8FA;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* NAV */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      height: 60px; background: var(--white);
+      border-bottom: 0.5px solid var(--border);
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+    }
+    .nav-left { display: flex; align-items: center; gap: 12px; }
+    .logo-box {
+      width: 34px; height: 34px; background: var(--teal-50);
+      border-radius: 9px; display: flex;
+      align-items: center; justify-content: center;
+    }
+    .logo-box svg { width: 20px; height: 20px; }
+    .brand { font-size: 16px; font-weight: 700; letter-spacing: -0.4px; }
+    .brand span { color: var(--teal-400); }
+    .nav-links { display: flex; gap: 4px; margin-left: 24px; }
+    .nav-link {
+      font-size: 13px; color: var(--text-muted);
+      padding: 6px 12px; border-radius: 6px;
+      cursor: pointer; text-decoration: none;
+      transition: all 0.15s;
+    }
+    .nav-link:hover { background: var(--gray-50); color: var(--text); }
+    .nav-right { display: flex; align-items: center; gap: 10px; }
+    .status-pill {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 11px; color: var(--teal-700);
+      background: var(--teal-50); padding: 4px 10px;
+      border-radius: 20px; font-weight: 500;
+    }
+    .live-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--teal-400);
+      animation: blink 2s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+    .btn-enter {
+      padding: 8px 20px; border-radius: 8px;
+      background: var(--teal-400); color: var(--white);
+      border: none; font-size: 13px; font-weight: 600;
+      cursor: pointer; letter-spacing: -0.2px;
+      transition: background 0.15s;
+      text-decoration: none; display: inline-block;
+    }
+    .btn-enter:hover { background: var(--teal-700); }
+
+    /* HERO */
+    .hero {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 60px; align-items: center;
+      padding: 72px 40px 64px;
+      background: var(--white);
+      border-bottom: 0.5px solid var(--border);
+      max-width: 1200px; margin: 0 auto;
+    }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--teal-50); color: var(--teal-700);
+      font-size: 11px; font-weight: 700;
+      padding: 5px 12px; border-radius: 20px;
+      margin-bottom: 20px; letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .hero h1 {
+      font-size: 42px; font-weight: 800;
+      line-height: 1.15; letter-spacing: -1px;
+      color: var(--text); margin-bottom: 18px;
+    }
+    .hero h1 .accent { color: var(--teal-400); }
+    .hero-desc {
+      font-size: 15px; color: var(--text-muted);
+      line-height: 1.7; margin-bottom: 32px;
+      max-width: 440px;
+    }
+    .hero-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn-primary {
+      padding: 12px 24px; border-radius: 9px;
+      background: var(--teal-400); color: var(--white);
+      border: none; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: background 0.15s;
+      text-decoration: none; display: inline-block;
+    }
+    .btn-primary:hover { background: var(--teal-700); }
+    .btn-ghost {
+      padding: 12px 24px; border-radius: 9px;
+      background: transparent; color: var(--text);
+      border: 0.5px solid var(--border);
+      font-size: 14px; cursor: pointer;
+      transition: all 0.15s; text-decoration: none;
+      display: inline-block;
+    }
+    .btn-ghost:hover { background: var(--gray-50); }
+
+    /* HERO VISUAL */
+    .hero-visual {
+      background: var(--bg); border-radius: 16px;
+      border: 0.5px solid var(--border); overflow: hidden;
+    }
+    .vis-header {
+      padding: 14px 18px;
+      border-bottom: 0.5px solid var(--border);
+      display: flex; align-items: center;
+      justify-content: space-between;
+      background: var(--white);
+    }
+    .vis-title { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .vis-badge {
+      font-size: 10px; background: var(--coral-50);
+      color: var(--coral-700); padding: 2px 8px;
+      border-radius: 10px; font-weight: 600;
+    }
+    .vis-body { padding: 8px 0; }
+    .vis-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 18px;
+      border-bottom: 0.5px solid rgba(0,0,0,0.04);
+      transition: background 0.1s;
+    }
+    .vis-row:last-child { border-bottom: none; }
+    .vis-row:hover { background: var(--white); }
+    .v-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .v-name { font-size: 13px; flex: 1; font-weight: 400; }
+    .v-dept {
+      font-size: 10px; background: var(--teal-50);
+      color: var(--teal-700); padding: 2px 7px;
+      border-radius: 8px; font-weight: 500;
+    }
+    .v-bar { width: 70px; height: 5px; background: var(--gray-100); border-radius: 3px; overflow: hidden; }
+    .v-fill { height: 100%; border-radius: 3px; }
+    .v-count { font-size: 12px; font-weight: 600; width: 30px; text-align: right; }
+
+    /* STATS STRIP */
+    .stats-strip {
+      display: grid; grid-template-columns: repeat(4,1fr);
+      background: var(--teal-400);
+      max-width: 100%;
+    }
+    .stat-item {
+      padding: 28px 32px;
+      border-right: 0.5px solid rgba(255,255,255,0.15);
+      text-align: center;
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-num { font-size: 32px; font-weight: 800; color: #fff; letter-spacing: -1px; }
+    .stat-lbl { font-size: 12px; color: rgba(255,255,255,0.75); margin-top: 4px; font-weight: 500; }
+
+    /* FEATURES */
+    .section { padding: 64px 40px; max-width: 1200px; margin: 0 auto; }
+    .section-tag {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--teal-400); margin-bottom: 10px;
+    }
+    .section-title {
+      font-size: 28px; font-weight: 800; letter-spacing: -0.5px;
+      color: var(--text); margin-bottom: 8px;
+    }
+    .section-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 40px; line-height: 1.6; }
+    .feat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+    .feat-card {
+      background: var(--white); border-radius: 14px;
+      border: 0.5px solid var(--border); padding: 24px;
+    }
+    .feat-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px;
+    }
+    .feat-icon svg { width: 20px; height: 20px; }
+    .feat-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .feat-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+    /* AGENTS */
+    .agents-section { background: var(--white); border-top: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); }
+    .agents-inner { max-width: 1200px; margin: 0 auto; padding: 64px 40px; }
+    .agents-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 14px; margin-top: 40px; }
+    .agent-card {
+      background: var(--bg); border-radius: 14px;
+      border: 0.5px solid var(--border); padding: 20px 16px;
+      text-align: center; transition: all 0.15s; cursor: default;
+    }
+    .agent-card:hover { border-color: var(--teal-200); background: var(--white); }
+    .agent-av {
+      width: 48px; height: 48px; border-radius: 50%;
+      margin: 0 auto 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700;
+    }
+    .agent-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .agent-role { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+
+    /* HOW IT WORKS */
+    .steps-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
+    .step-card {
+      background: var(--white); border-radius: 14px;
+      border: 0.5px solid var(--border); padding: 22px;
+    }
+    .step-num {
+      font-size: 11px; font-weight: 800; color: var(--teal-400);
+      letter-spacing: 0.06em; margin-bottom: 12px;
+    }
+    .step-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .step-desc { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+
+    /* CTA */
+    .cta-section {
+      background: var(--teal-400);
+      padding: 72px 40px; text-align: center;
+    }
+    .cta-title { font-size: 32px; font-weight: 800; color: #fff; letter-spacing: -0.5px; margin-bottom: 12px; }
+    .cta-sub { font-size: 15px; color: rgba(255,255,255,0.8); margin-bottom: 32px; line-height: 1.6; }
+    .btn-white {
+      padding: 14px 32px; border-radius: 10px;
+      background: #fff; color: var(--teal-700);
+      border: none; font-size: 15px; font-weight: 700;
+      cursor: pointer; transition: all 0.15s;
+      text-decoration: none; display: inline-block;
+    }
+    .btn-white:hover { background: var(--teal-50); }
+
+    /* FOOTER */
+    footer {
+      background: var(--white); border-top: 0.5px solid var(--border);
+      padding: 24px 40px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .footer-brand { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--text); }
+    .footer-note { font-size: 12px; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-left">
+      <div class="logo-box">
+        <svg viewBox="0 0 20 20" fill="none">
+          <rect x="9" y="2" width="2" height="16" rx="1" fill="#1D9E75"/>
+          <rect x="2" y="9" width="16" height="2" rx="1" fill="#1D9E75"/>
+        </svg>
+      </div>
+      <span class="brand">Agent<span>Pulse</span></span>
+      <div class="nav-links">
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#agents" class="nav-link">Agents</a>
+        <a href="#how" class="nav-link">How it works</a>
+      </div>
+    </div>
+    <div class="nav-right">
+      <div class="status-pill">
+        <span class="live-dot"></span>
+        5 agents active
+      </div>
+      <a href="/dashboard" class="btn-enter">Enter Dashboard</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <div style="background:var(--white)">
+    <div class="hero">
+      <div>
+        <div class="hero-tag">
+          <span class="live-dot"></span>
+          AI-powered system
+        </div>
+        <h1>Hospital assets.<br/><span class="accent">Managed smartly.</span><br/>Always ready.</h1>
+        <p class="hero-desc">
+          Five AI agents work together to track medical supplies, fire alerts when stock runs low, reallocate assets between departments, and generate daily reports — all automatically.
+        </p>
+        <div class="hero-btns">
+          <a href="/dashboard" class="btn-primary">Open Dashboard</a>
+          <a href="#agents" class="btn-ghost">Meet the agents</a>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="vis-header">
+          <span class="vis-title">Live inventory snapshot</span>
+          <span class="vis-badge">3 alerts open</span>
+        </div>
+        <div class="vis-body">
+          <div class="vis-row">
+            <div class="v-dot" style="background:#1D9E75"></div>
+            <span class="v-name">Oxygen Cylinder</span>
+            <span class="v-dept">ICU</span>
+            <div class="v-bar"><div class="v-fill" style="width:70%;background:#1D9E75"></div></div>
+            <span class="v-count" style="color:#1D9E75">42</span>
+          </div>
+          <div class="vis-row">
+            <div class="v-dot" style="background:#D85A30"></div>
+            <span class="v-name">Ventilator</span>
+            <span class="v-dept">ICU</span>
+            <div class="v-bar"><div class="v-fill" style="width:40%;background:#D85A30"></div></div>
+            <span class="v-count" style="color:#D85A30">10</span>
+          </div>
+          <div class="vis-row">
+            <div class="v-dot" style="background:#D85A30"></div>
+            <span class="v-name">Blood Bag O+</span>
+            <span class="v-dept">Blood Bank</span>
+            <div class="v-bar"><div class="v-fill" style="width:22%;background:#D85A30"></div></div>
+            <span class="v-count" style="color:#D85A30">18</span>
+          </div>
+          <div class="vis-row">
+            <div class="v-dot" style="background:#1D9E75"></div>
+            <span class="v-name">IV Drip Set</span>
+            <span class="v-dept">Ward A</span>
+            <div class="v-bar"><div class="v-fill" style="width:85%;background:#1D9E75"></div></div>
+            <span class="v-count" style="color:#1D9E75">25</span>
+          </div>
+          <div class="vis-row">
+            <div class="v-dot" style="background:#BA7517"></div>
+            <span class="v-name">Surgical Gloves</span>
+            <span class="v-dept">OT</span>
+            <div class="v-bar"><div class="v-fill" style="width:55%;background:#BA7517"></div></div>
+            <span class="v-count" style="color:#BA7517">95</span>
+          </div>
+          <div class="vis-row">
+            <div class="v-dot" style="background:#1D9E75"></div>
+            <span class="v-name">Hospital Bed</span>
+            <span class="v-dept">Ward B</span>
+            <div class="v-bar"><div class="v-fill" style="width:78%;background:#1D9E75"></div></div>
+            <span class="v-count" style="color:#1D9E75">28</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS STRIP -->
+  <div class="stats-strip">
+    <div class="stat-item"><div class="stat-num">24</div><div class="stat-lbl">Assets tracked</div></div>
+    <div class="stat-item"><div class="stat-num">7</div><div class="stat-lbl">Departments covered</div></div>
+    <div class="stat-item"><div class="stat-num">5</div><div class="stat-lbl">AI agents running</div></div>
+    <div class="stat-item"><div class="stat-num">0</div><div class="stat-lbl">Manual effort needed</div></div>
+  </div>
+
+  <!-- FEATURES -->
+  <div id="features" style="background:var(--bg)">
+    <div class="section">
+      <div class="section-tag">Features</div>
+      <div class="section-title">Everything a hospital needs</div>
+      <div class="section-sub">Built for real emergency scenarios — no medical advice, pure asset logistics.</div>
+      <div class="feat-grid">
+        <div class="feat-card">
+          <div class="feat-icon" style="background:#E1F5EE">
+            <svg viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="16" height="16" rx="3" stroke="#1D9E75" stroke-width="1.5"/><rect x="6" y="6" width="3" height="8" rx="1.5" fill="#1D9E75"/><rect x="11" y="10" width="3" height="4" rx="1.5" fill="#1D9E75"/></svg>
+          </div>
+          <div class="feat-title">Real-time inventory</div>
+          <div class="feat-desc">Every asset across all departments tracked live. Color-coded bars show stock health at a glance.</div>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon" style="background:#FAECE7">
+            <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="#D85A30" stroke-width="1.5"/><rect x="9.5" y="6" width="1" height="5.5" rx="0.5" fill="#D85A30"/><circle cx="10" cy="13.5" r="1" fill="#D85A30"/></svg>
+          </div>
+          <div class="feat-title">Severity-ranked alerts</div>
+          <div class="feat-desc">Alert Agent classifies every shortage as Critical, High, or Medium and logs it to MongoDB instantly.</div>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon" style="background:#FAEEDA">
+            <svg viewBox="0 0 20 20" fill="none"><path d="M3 10h14M12 5l5 5-5 5" stroke="#BA7517" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="feat-title">Auto reallocation</div>
+          <div class="feat-desc">Allocator Agent finds surplus departments and moves assets to critical ones — zero manual steps.</div>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon" style="background:#EEEDFE">
+            <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="#534AB7" stroke-width="1.5"/><path d="M3 18c0-3.3 3.1-6 7-6s7 2.7 7 6" stroke="#534AB7" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <div class="feat-title">Smart orchestration</div>
+          <div class="feat-desc">One natural language query — the Orchestrator decides which agent handles it automatically.</div>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon" style="background:#E6F1FB">
+            <svg viewBox="0 0 20 20" fill="none"><rect x="3" y="2" width="14" height="16" rx="2" stroke="#185FA5" stroke-width="1.5"/><rect x="6" y="6" width="8" height="1.5" rx="0.75" fill="#185FA5"/><rect x="6" y="9.5" width="5" height="1.5" rx="0.75" fill="#185FA5"/><rect x="6" y="13" width="6" height="1.5" rx="0.75" fill="#185FA5"/></svg>
+          </div>
+          <div class="feat-title">Daily reports</div>
+          <div class="feat-desc">Report Agent reads the full event log and generates a professional admin summary every day.</div>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon" style="background:#E1F5EE">
+            <svg viewBox="0 0 20 20" fill="none"><ellipse cx="10" cy="10" rx="7" ry="5" stroke="#1D9E75" stroke-width="1.5"/><path d="M10 5v10M3 10h14" stroke="#1D9E75" stroke-width="1" stroke-dasharray="2 2"/></svg>
+          </div>
+          <div class="feat-title">MongoDB + Compass</div>
+          <div class="feat-desc">All data stored locally in MongoDB. Watch collections update live in Compass as agents act.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AGENTS -->
+  <div id="agents" class="agents-section">
+    <div class="agents-inner">
+      <div class="section-tag">The team</div>
+      <div class="section-title">5 agents, one mission</div>
+      <div class="section-sub">Each agent has a single focused job. Together they handle any hospital asset scenario.</div>
+      <div class="agents-grid">
+        <div class="agent-card">
+          <div class="agent-av" style="background:#EEEDFE;color:#3C3489">OR</div>
+          <div class="agent-name">Orchestrator</div>
+          <div class="agent-role">Routes your query to the right specialist agent</div>
+        </div>
+        <div class="agent-card">
+          <div class="agent-av" style="background:#E1F5EE;color:#085041">IN</div>
+          <div class="agent-name">Inventory</div>
+          <div class="agent-role">Answers stock questions from live MongoDB data</div>
+        </div>
+        <div class="agent-card">
+          <div class="agent-av" style="background:#FAECE7;color:#712B13">AL</div>
+          <div class="agent-name">Alert</div>
+          <div class="agent-role">Monitors thresholds and creates severity alerts</div>
+        </div>
+        <div class="agent-card">
+          <div class="agent-av" style="background:#FAEEDA;color:#633806">AC</div>
+          <div class="agent-name">Allocator</div>
+          <div class="agent-role">Moves surplus stock to critical departments</div>
+        </div>
+        <div class="agent-card">
+          <div class="agent-av" style="background:#E6F1FB;color:#0C447C">RE</div>
+          <div class="agent-name">Report</div>
+          <div class="agent-role">Generates daily summaries and audit trails</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div id="how" style="background:var(--bg)">
+    <div class="section">
+      <div class="section-tag">How it works</div>
+      <div class="section-title">From query to action in seconds</div>
+      <div class="section-sub">Type anything in plain English — the system handles the rest.</div>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">STEP 01</div>
+          <div class="step-title">Staff types a query</div>
+          <div class="step-desc">"Which assets are critically low?" — plain English, no special commands needed.</div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">STEP 02</div>
+          <div class="step-title">Orchestrator routes it</div>
+          <div class="step-desc">AI decides whether Inventory, Alert, Allocator, or Report agent should handle it.</div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">STEP 03</div>
+          <div class="step-title">Agent reads MongoDB</div>
+          <div class="step-desc">The specialist agent pulls live data from your local database and reasons over it.</div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">STEP 04</div>
+          <div class="step-title">Action + log</div>
+          <div class="step-desc">Response is returned, database is updated if needed, and every action is logged to event_log.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <div class="cta-title">Ready to manage your hospital assets?</div>
+    <div class="cta-sub">Your 5 agents are online and your database is loaded.<br/>Open the dashboard and start asking questions.</div>
+    <a href="/dashboard" class="btn-white">Open Dashboard</a>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-brand">
+      <div style="width:24px;height:24px;background:#E1F5EE;border-radius:6px;display:flex;align-items:center;justify-content:center">
+        <svg width="14" height="14" viewBox="0 0 18 18" fill="none"><rect x="8" y="2" width="2" height="14" rx="1" fill="#1D9E75"/><rect x="2" y="8" width="14" height="2" rx="1" fill="#1D9E75"/></svg>
+      </div>
+      AgentPulse
+    </div>
+    <div class="footer-note">Built with Groq + MongoDB + Flask · All free, all local</div>
+  </footer>
+
+</body>
+</html>
