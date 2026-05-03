@@ -22,8 +22,8 @@
 
 **Five AI agents working 24/7 — tracking, alerting, allocating, and reporting hospital assets automatically.**
 
-[![GitHub stars](https://img.shields.io/github/stars/YOUR_USERNAME/agentpulse?style=social)](https://github.com/YOUR_USERNAME/agentpulse)
-[![GitHub forks](https://img.shields.io/github/forks/YOUR_USERNAME/agentpulse?style=social)](https://github.com/YOUR_USERNAME/agentpulse/fork)
+[![GitHub stars](https://img.shields.io/github/stars/Sanikak99/agentpulse?style=social)](https://github.com/Sanikak99/agentpulse)
+[![GitHub forks](https://img.shields.io/github/forks/Sanikak99/agentpulse?style=social)](https://github.com/Sanikak99/agentpulse/fork)
 
 </div>
 
@@ -40,10 +40,10 @@ No more spreadsheets. No more manual checks. Just smart agents doing the work.
 ## 🖥️ Interface
 
 ### 🏠 Landing Page
-![AgentPulse Landing Page](./screenshots/landing.png)
+![AgentPulse Landing Page](https://raw.githubusercontent.com/Sanikak99/agentpulse/main/screenshots/landing.png)
 
 ### 📊 Dashboard
-![AgentPulse Dashboard](./screenshots/dashboard.png)
+![AgentPulse Dashboard](https://raw.githubusercontent.com/Sanikak99/agentpulse/main/screenshots/dashboard.png)
 
 ---
 
@@ -114,43 +114,6 @@ AgentPulse/
 
 ---
 
-## 🚀 Getting Started
-
-### 1. Clone the Repository
-```bash
-git clone https://github.com/YOUR_USERNAME/agentpulse.git
-cd agentpulse
-```
-
-### 2. Install Dependencies
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Setup Environment Variables
-Create a `.env` file in the root folder:
-```env
-MONGO_URI=your_mongodb_connection_string
-GROQ_API_KEY=your_groq_api_key
-```
-
-### 4. Seed the Database
-```bash
-python data/seed_data.py
-```
-
-### 5. Run the App
-```bash
-python app.py
-```
-
-### 6. Open in Browser
-```
-http://localhost:5000
-```
-
----
-
 ## 📊 Live Stats
 
 | Metric | Value |
@@ -168,24 +131,6 @@ http://localhost:5000
 |----------|-------------|
 | `MONGO_URI` | Your MongoDB Atlas connection string |
 | `GROQ_API_KEY` | Your Groq API key for LLM access |
-
-> ⚠️ **Never share your `.env` file or commit it to GitHub!**
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
----
-
-## 📄 License
-
-Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
 
