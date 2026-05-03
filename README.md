@@ -22,9 +22,6 @@
 
 **Five AI agents working 24/7 — tracking, alerting, allocating, and reporting hospital assets automatically.**
 
-[![GitHub stars](https://img.shields.io/github/stars/Sanikak99/agentpulse?style=social)](https://github.com/Sanikak99/agentpulse)
-[![GitHub forks](https://img.shields.io/github/forks/Sanikak99/agentpulse?style=social)](https://github.com/Sanikak99/agentpulse/fork)
-
 </div>
 
 ---
